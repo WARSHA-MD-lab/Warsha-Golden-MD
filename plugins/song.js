@@ -35,7 +35,7 @@ const caption = `
 ┃📌 Title: ${vid.title}
 ┃⏱️ Duration: ${vid.timestamp}
 ┃👤 Channel: ${vid.author.name}
-┃⚡ Sending audio...
+┃⚡ Downloading audio...
 ╰━━━━━━━━━━━━━━⊷
 `
 
@@ -44,35 +44,40 @@ image: { url: vid.thumbnail },
 caption: caption
 },{ quoted: fakevCard })
 
-/* 🎵 Download Audio */
+/* 🎵 Download Audio - FIXED */
 const api = `https://arslan-apis-v2.vercel.app/download/ytmp3?url=${encodeURIComponent(vid.url)}`
 
 const res = await axios.get(api, { timeout: 60000 })
 
-if (
-!res.data ||
-!res.data.status ||
-!res.data.result ||
-!res.data.result.download ||
-!res.data.result.download.url
-) {
-return reply("❌ Audio download failed")
+// Log the response to debug
+console.log('API Response:', JSON.stringify(res.data, null, 2))
+
+// Check response structure properly
+if (!res.data || !res.data.status) {
+return reply("❌ API returned error status")
 }
 
-const audioUrl = res.data.result.download.url
-const title = res.data.result.metadata.title || vid.title
-const duration = res.data.result.metadata.duration || vid.duration
+const result = res.data.result
+
+if (!result || !result.download || !result.download.url) {
+return reply("❌ No download URL found in response")
+}
+
+const audioUrl = result.download.url
+const title = result.metadata?.title || vid.title
+const duration = result.metadata?.duration || vid.duration
 
 /* 🚀 Send Audio Direct */
 await conn.sendMessage(from, {
 audio: { url: audioUrl },
 mimetype: "audio/mpeg",
 caption: `🎵 *${title}*\n⏱️ ${Math.floor(duration)} seconds\n\n> © ᴀʀꜱʟᴀɴ-ᴍᴅ`,
-ptt: false // Set true for voice note
+ptt: false
 }, { quoted: fakevCard })
 
 } catch (err) {
-console.log(err)
+console.log('Error details:', err.message)
+console.log('Full error:', err)
 reply("❌ Error downloading song. Try again!")
 }
 
