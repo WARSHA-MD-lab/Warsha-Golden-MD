@@ -6,7 +6,7 @@ const { fakevCard } = require('../lib/fakevCard')
 cmd({
 pattern: "song",
 alias: ["music", "mp3", "audio"],
-desc: "Download YouTube Audio",
+desc: "Download YouTube Audio (High Quality)",
 category: "download",
 react: "🎵",
 filename: __filename
@@ -19,6 +19,7 @@ if (!text) {
 return reply("❌ Example:\n.song pasoori")
 }
 
+/* 🔍 Search */
 const search = await yts(text)
 
 if (!search.videos.length) {
@@ -27,58 +28,51 @@ return reply("❌ No song found")
 
 const vid = search.videos[0]
 
+/* 🎨 Preview */
 const caption = `
 ╔ஜ۩▒█ ᴀʀꜱʟᴀɴ X ᴍᴅ █▒۩ஜ╗
 ┃🎵 SONG FOUND
 ┃📌 Title: ${vid.title}
 ┃⏱️ Duration: ${vid.timestamp}
-┃👤 Channel: ${vid.author.name}
-┃⚡ Downloading...
+┃⚡ Sending audio...
 ╰━━━━━━━━━━━━━━⊷
 `
 
 await conn.sendMessage(from,{
-image: { url: vid.thumbnail },
-caption: caption
-},{ quoted: fakevCard })
+image:{url:vid.thumbnail},
+caption
+},{quoted:fakevCard})
 
+/* 🎵 AUDIO API - Same as video but ytmp3 */
 const api = `https://arslan-apis-v2.vercel.app/download/ytmp3?url=${encodeURIComponent(vid.url)}`
 
-const res = await axios.get(api, { timeout: 60000 })
+const res = await axios.get(api,{timeout:60000})
 
-// Debug log
-console.log('API Status:', res.data?.status)
-console.log('Has Result:', !!res.data?.result)
-console.log('Has Download:', !!res.data?.result?.download)
-console.log('Has URL:', !!res.data?.result?.download?.url)
-
-// Try alternative way to get URL
-let audioUrl = null
-let title = vid.title
-
-if (res.data?.result?.download?.url) {
-audioUrl = res.data.result.download.url
-title = res.data.result.metadata?.title || vid.title
-} else if (res.data?.download?.url) {
-audioUrl = res.data.download.url
-} else if (res.data?.url) {
-audioUrl = res.data.url
-} else {
-// If no URL found, show full response for debugging
-return reply(`❌ API Error: ${JSON.stringify(res.data, null, 2).slice(0, 200)}...`)
+if(
+!res.data ||
+!res.data.status ||
+!res.data.result ||
+!res.data.result.download ||
+!res.data.result.download.url
+){
+return reply("❌ Audio download failed")
 }
 
-// Send audio
-await conn.sendMessage(from, {
-audio: { url: audioUrl },
-mimetype: "audio/mpeg",
-caption: `🎵 *${title}*\n\n> © ᴀʀꜱʟᴀɴ-ᴍᴅ`,
-ptt: false
-}, { quoted: fakevCard })
+const audioUrl = res.data.result.download.url
+const title = res.data.result.metadata.title || vid.title
 
-} catch (err) {
-console.log('Error:', err.message)
-reply(`❌ Error: ${err.message}`)
+/* 🚀 SEND AUDIO DIRECT - Same as video but 'audio' instead of 'video' */
+await conn.sendMessage(from,{
+audio:{url:audioUrl},
+mimetype:"audio/mpeg",
+caption:`🎵 *${title}*\n\n> © ᴀʀꜱʟᴀɴ-ᴍᴅ`
+},{quoted:fakevCard})
+
+}catch(err){
+
+console.log(err)
+reply("❌ Audio error")
+
 }
 
 })
