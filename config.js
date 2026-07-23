@@ -242,13 +242,13 @@ module.exports = {
     /** 
      * @description Telegram bot token for notifications
      * @type {string}
-     * @default "7214172448:..."
+     * @default "703916353:..."
      */
     
     /** 
      * @description Telegram chat ID for sending notifications
      * @type {string}
-     * @default "+923237045919"
+     * @default "+94703916353"
      */
     
 };
