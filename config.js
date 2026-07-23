@@ -33,8 +33,7 @@ module.exports = {
      * @type {string}
      * @default "MINI BOT"
      */
-    SESSION_ID: process.env.SESSION_ID || "MINI BOT",
-    
+    SESSION_ID: process.env.SESSION_ID || "",
     /** 
      * @description MongoDB Atlas connection string
      * @type {string}
@@ -63,7 +62,7 @@ module.exports = {
     /** 
      * @description Display name of the bot
      * @type {string}
-     * @default "Warsha MD Mini"
+     * @default "WARSHA-MD"
      */
     BOT_NAME: "Arslan MD Mini",
     
@@ -287,3 +286,4 @@ module.exports = {
  * @author Arslan MD
  * @license MIT
  */
+SESSION_ID: process.env.SESSION_ID || '',
